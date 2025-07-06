@@ -19,9 +19,19 @@ use App\Filament\Resources\UserResource\RelationManagers;
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
+    protected static ?string $navigationGroup = 'Users';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return static::getModel()::count() > 10 ? 'warning' : 'primary';
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -29,7 +39,7 @@ class UserResource extends Resource
                 TextInput::make('name')->label('Full Name')->maxLength(255)->required(),
                 TextInput::make('email')->label('Email')->email()->maxLength(255)->required()->unique(),
                 TextInput::make('password')->label('Password')->password()->maxLength(255)->hiddenOn('edit')->required(),
-                Select::make('roles')->relationship('roles','name')->preload()->required()->multiple(),
+                Select::make('roles')->relationship('roles', 'name')->preload()->required()->multiple(),
             ]);
     }
 
