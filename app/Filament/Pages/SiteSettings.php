@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Filament\Pages;
 
 use App\Models\SchoolInfo;
@@ -7,6 +8,8 @@ use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use App\Models\Setting;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Group;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,14 +44,27 @@ class SiteSettings extends Page implements Forms\Contracts\HasForms
     protected function getFormSchema(): array
     {
         return [
-            Forms\Components\TextInput::make('school_name')->label('School Name')->maxLength(255)->required(),
-            Forms\Components\TextInput::make('email')->email()->required()->maxLength(255),
-            Forms\Components\TextInput::make('address')->required()->maxLength(255),
-            Forms\Components\TextInput::make('phone')->tel()->required(),
-            Forms\Components\FileUpload::make('logo'),
-            Forms\Components\TextInput::make('website')->maxLength(255),
-            Forms\Components\TextInput::make('slogan')->maxLength(255),
-            Forms\Components\ColorPicker::make('school_theme'),
+            Grid::make(2)->schema([
+
+                Group::make()->schema([
+                    Forms\Components\TextInput::make('school_name')->label('School Name')->maxLength(255)->required(),
+                    Forms\Components\TextInput::make('email')->email()->required()->maxLength(255),
+                ]),
+
+                Group::make()->schema([
+                    Forms\Components\TextInput::make('address')->required()->maxLength(255),
+                    Forms\Components\TextInput::make('phone')->tel()->required(),
+                ]),
+
+                Forms\Components\FileUpload::make('logo')->columnSpanFull(),
+                Forms\Components\TextInput::make('website')->columnSpanFull()->maxLength(255),
+                Group::make()->schema([
+                    Forms\Components\TextInput::make('slogan')->maxLength(255),
+                ]),
+                Group::make()->schema([
+                    Forms\Components\ColorPicker::make('school_theme'),
+                ])
+            ]),
         ];
     }
 

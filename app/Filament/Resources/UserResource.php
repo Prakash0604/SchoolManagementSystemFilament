@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\UserResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\UserResource\RelationManagers;
+use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Columns\ImageColumn;
 
 class UserResource extends Resource
 {
@@ -39,7 +41,10 @@ class UserResource extends Resource
                 TextInput::make('name')->label('Full Name')->maxLength(255)->required(),
                 TextInput::make('email')->label('Email')->email()->maxLength(255)->required()->unique(),
                 TextInput::make('password')->label('Password')->password()->maxLength(255)->hiddenOn('edit')->required(),
+                TextInput::make('address')->label('Address')->maxLength(255),
+                TextInput::make('contact')->label('Contact Number')->tel(),
                 Select::make('roles')->relationship('roles', 'name')->preload()->required()->multiple(),
+                FileUpload::make('profile')->image()->disk('public')->directory('uploads') ->columnSpanFull(),
             ]);
     }
 
@@ -47,6 +52,7 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
+                ImageColumn::make('profile')->label('Profile Image')->circular()->size(40),
                 TextColumn::make('name')->searchable(),
                 TextColumn::make('email')->searchable(),
                 TextColumn::make('roles.name')->searchable()
