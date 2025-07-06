@@ -1,0 +1,1 @@
+<img src="{{ asset('logo-removebg.png') }}" alt="Logo" class="h-10">
