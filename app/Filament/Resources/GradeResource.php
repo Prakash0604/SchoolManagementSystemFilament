@@ -19,8 +19,14 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class GradeResource extends Resource
 {
     protected static ?string $model = Grade::class;
+    protected static ?string $navigationGroup = 'Academic Setup';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+
+      public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
 
     public static function form(Form $form): Form
     {

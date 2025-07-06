@@ -2,11 +2,10 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SectionResource\Pages;
-use App\Filament\Resources\SectionResource\RelationManagers;
-use App\Models\Section;
+use App\Filament\Resources\SubjectResource\Pages;
+use App\Filament\Resources\SubjectResource\RelationManagers;
+use App\Models\Subject;
 use Filament\Forms;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -17,27 +16,22 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class SectionResource extends Resource
+class SubjectResource extends Resource
 {
-    protected static ?string $model = Section::class;
+    protected static ?string $model = Subject::class;
+
     protected static ?string $navigationGroup = 'Academic Setup';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-library';
-
-      public static function getNavigationBadge(): ?string
+    public static function getNavigationBadge(): ?string
     {
         return static::getModel()::count();
     }
-
-
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('name')->label('Section Name')->required()->maxLength(255),
-                Select::make('grade_id')->relationship('grade','name')->searchable()->preload()->createOptionForm([
-                    TextInput::make('name')->required()->unique()->maxLength(255)->label('Grade Name'),
-                ])->required()
+                TextInput::make('name')->columnSpanFull()->label('Subject Title')->unique()->required(),
             ]);
     }
 
@@ -45,7 +39,6 @@ class SectionResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('grade.name')->searchable(),
                 TextColumn::make('name')->searchable(),
                 ToggleColumn::make('status')
                     ->label('Status')
@@ -64,14 +57,14 @@ class SectionResource extends Resource
                 //
             ])
             ->actions([
-                 Tables\Actions\EditAction::make()->modalHeading('Edit Section')
+                Tables\Actions\EditAction::make()->modalHeading('Edit Subject')
                     ->modalSubmitActionLabel('Save Changes'),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
-                    ->modalHeading('Add Section')
-                    ->modalSubmitActionLabel('Create Section'),
+                    ->modalHeading('Add Subject')
+                    ->modalSubmitActionLabel('Create Subject'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -90,9 +83,9 @@ class SectionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSections::route('/'),
-            // 'create' => Pages\CreateSection::route('/create'),
-            // 'edit' => Pages\EditSection::route('/{record}/edit'),
+            'index' => Pages\ListSubjects::route('/'),
+            // 'create' => Pages\CreateSubject::route('/create'),
+            // 'edit' => Pages\EditSubject::route('/{record}/edit'),
         ];
     }
 }
