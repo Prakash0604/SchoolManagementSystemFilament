@@ -6,6 +6,7 @@ use App\Filament\Resources\SectionResource\Pages;
 use App\Filament\Resources\SectionResource\RelationManagers;
 use App\Models\Section;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -13,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -37,6 +39,11 @@ class SectionResource extends Resource
                 TextInput::make('name')->label('Section Name')->required()->maxLength(255),
                 Select::make('grade_id')->relationship('grade','name')->searchable()->preload()->createOptionForm([
                     TextInput::make('name')->required()->unique()->maxLength(255)->label('Grade Name'),
+                ])->required(),
+                Select::make('academic_year_id')->relationship('academicYear','name')->searchable()->preload()->createOptionForm([
+                    TextInput::make('name')->required()->unique()->maxLength(255)->label('AcademicYear Name'),
+                    DatePicker::make('start_date')->required(),
+                    DatePicker::make('end_date')->required(),
                 ])->required()
             ]);
     }
@@ -45,6 +52,7 @@ class SectionResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('academicYear.name')->searchable(),
                 TextColumn::make('grade.name')->searchable(),
                 TextColumn::make('name')->searchable(),
                 ToggleColumn::make('status')
@@ -61,7 +69,7 @@ class SectionResource extends Resource
                     ->offColor('danger')
             ])
             ->filters([
-                //
+                SelectFilter::make('academic_year_id')->relationship('academicYear','name'),
             ])
             ->actions([
                  Tables\Actions\EditAction::make()->modalHeading('Edit Section')
