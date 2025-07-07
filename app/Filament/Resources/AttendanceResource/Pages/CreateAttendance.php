@@ -3,72 +3,61 @@
 namespace App\Filament\Resources\AttendanceResource\Pages;
 
 use App\Filament\Resources\AttendanceResource;
-use App\Filament\Resources\ViewResource\Pages\Student;
 use App\Models\Attendance;
-use Filament\Actions;
-use App\Models\Student as Stu;
+use App\Models\AttendanceData;
+use App\Models\Student;
 use Filament\Resources\Pages\CreateRecord;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
+use Illuminate\Database\Eloquent\Model;
 
-class CreateAttendance extends CreateRecord 
+class CreateAttendance extends CreateRecord
 {
     protected static string $resource = AttendanceResource::class;
-    // use InteractsWithForms;
 
-    protected function mutateFormDataBeforeCreate(array $data): array
-    {
-        // Your save logic here
-        return $data;
-    }
+    public array $students = [];
+    public array $attendance_data = [];
 
     protected function getFormSchema(): array
     {
         return [
-            // your schema
-        ];
-    }
-    public function getFormStatePath(): string
-    {
-        return parent::getFormStatePath();
-    }
-
-
-public function mount(): void
-{
-    parent::mount(); // Required by Filament
-
-    $students = Stu::all();
-
-    $attendanceData = [];
-
-    foreach ($students as $student) {
-        $attendanceData[$student->id] = [
-            'student_id' => $student->id,
-            'type' => 'present',
+            // Add any static inputs like Selects for academic_year, section, date, etc.
         ];
     }
 
-    // ✅ This is the correct way
-    $this->fillForm([
-        'attendance_data' => $attendanceData,
-    ]);
-}
-
-
-
-    protected function initializeAttendanceData(): array
+    public function mount(): void
     {
-        $students = Student::all();
-        $data = [];
+        parent::mount();
 
-        foreach ($students as $student) {
-            $data[$student->id] = [
-                'student_id' => $student->id,
-                'type' => 'present',
+        // Get all students (customize filter as needed)
+        $this->students = Student::all()->toArray();
+
+        // Pre-fill attendance data
+        foreach ($this->students as $student) {
+            $this->attendance_data[$student['id']] = [
+                'student_id' => $student['id'],
+                'type' => 'Present',
             ];
         }
+    }
 
-        return $data;
+    public function setAll(string $type): void
+    {
+        foreach ($this->attendance_data as $id => $entry) {
+            $this->attendance_data[$id]['type'] = ucfirst($type);
+        }
+    }
+
+    protected function handleRecordCreation(array $data): Model
+    {
+        $attendance = Attendance::create($data);
+
+        foreach ($this->attendance_data as $entry) {
+            AttendanceData::create([
+                'attendance_id' => $attendance->id,
+                'student_id' => $entry['student_id'],
+                'attendance_type' => $entry['type'],
+            ]);
+        }
+
+        return $attendance;
     }
 }

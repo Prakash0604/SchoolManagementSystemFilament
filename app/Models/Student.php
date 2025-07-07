@@ -23,8 +23,14 @@ class Student extends Model
         return $this->hasOne(ParentInformation::class);
     }
 
+
     public function academic()
     {
         return $this->hasOne(AcademicInformation::class);
+    }
+
+    public function attendanceData()
+    {
+        return $this->hasMany(AttendanceData::class);
     }
 }
