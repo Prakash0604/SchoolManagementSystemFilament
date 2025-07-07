@@ -25,11 +25,10 @@ class ViewTeacherSubjectListData extends ViewRecord
         TeacherSubjectList::findOrFail($id)->delete();
 
         Notification::make()
-            ->title('Deleted successfully')
+            ->title('Teacher Subject Deleted successfully')
             ->success()
             ->send();
 
-        // Refresh the data
         $this->record->refresh();
     }
 }
