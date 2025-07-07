@@ -4,17 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\ToggleStatusTrait;
 
-class Section extends Model
+class TeacherSubject extends Model
 {
-    use HasFactory, ToggleStatusTrait;
+    use HasFactory;
+    protected $fillable = ['user_id', 'academic_year_id'];
 
-    protected $fillable = ['name', 'grade_id', 'status', 'academic_year_id'];
-
-    public function grade()
+    public function user()
     {
-        return $this->belongsTo(Grade::class);
+        return $this->belongsTo(User::class);
     }
 
     public function academicYear()
@@ -22,7 +20,7 @@ class Section extends Model
         return $this->belongsTo(AcademicYear::class);
     }
 
-    public function teacherSubjectLists()
+    public function subjectLists()
     {
         return $this->hasMany(TeacherSubjectList::class);
     }
