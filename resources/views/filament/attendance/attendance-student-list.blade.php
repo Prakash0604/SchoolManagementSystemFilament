@@ -10,32 +10,29 @@
         <!-- Students -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach($students as $student)
-                <div class="p-4 bg-gray-600 shadow border rounded space-y-3">
-                    <p class="font-semibold text-gray-900 text-sm">{{ $student['full_name'] }}</p>
+                <div class="p-4 bg-gray-700 rounded shadow text-white space-y-2">
+                    <p class="font-semibold">{{ $student['full_name'] }}</p>
 
-                    <div class="flex flex-col gap-2 text-sm">
+                    <div class="flex flex-col gap-2">
+                        @php
+                            $current = $attendance_data[$student['id']]['type'] ?? null;
+                        @endphp
+
                         <label class="flex items-center gap-2">
-                            <input type="radio"
-                                wire:model="attendance_data.{{ $student['id'] }}.type"
-                                value="Present"
-                                class="text-green-600">
-                            <span>Present</span>
+                            <input type="radio" wire:model.defer="attendance_data.{{ $student['id'] }}.type"
+                                value="Present">
+                            Present
                         </label>
 
                         <label class="flex items-center gap-2">
-                            <input type="radio"
-                                wire:model="attendance_data.{{ $student['id'] }}.type"
-                                value="Absent"
-                                class="text-red-600">
-                            <span>Absent</span>
+                            <input type="radio" wire:model.defer="attendance_data.{{ $student['id'] }}.type" value="Absent">
+                            Absent
                         </label>
 
                         <label class="flex items-center gap-2">
-                            <input type="radio"
-                                wire:model="attendance_data.{{ $student['id'] }}.type"
-                                value="On Leave"
-                                class="text-yellow-500">
-                            <span>On Leave</span>
+                            <input type="radio" wire:model.defer="attendance_data.{{ $student['id'] }}.type"
+                                value="On Leave">
+                            On Leave
                         </label>
                     </div>
                 </div>

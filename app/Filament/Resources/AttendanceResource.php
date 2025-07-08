@@ -6,6 +6,7 @@ use App\Filament\Resources\AttendanceResource\Pages;
 use App\Filament\Resources\AttendanceResource\RelationManagers;
 use App\Models\Attendance;
 use App\Models\Student;
+use Closure;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
@@ -18,6 +19,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\Hidden;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 
 class AttendanceResource extends Resource
 {
@@ -30,34 +34,84 @@ class AttendanceResource extends Resource
         return $form
             ->schema([
                 Select::make('academic_year_id')
-                    ->relationship('academicYear', 'name')
                     ->label('Academic Year')
+                    ->relationship('academicYear', 'name')
+                    ->required()
                     ->reactive()
-                    ->required(),
+                    ->afterStateUpdated(function ($set, $state, $get) {
+                        $set('grade_id', null);
+                        $set('section_id', null);
 
+                        $exists = \App\Models\Attendance::where('academic_year_id', $state)
+                            ->where('grade_id', $get('grade_id'))
+                            ->where('section_id', $get('section_id'))
+                            ->whereDate('attendance_date', $get('attendance_date'))
+                            ->exists();
+
+                        $set('is_already_taken', $exists);
+                    }),
+
+                // Similarly for grade_id
                 Select::make('grade_id')
                     ->relationship('grade', 'name')
                     ->label('Grade')
+                    ->required()
                     ->reactive()
-                    ->required(),
+                    ->afterStateUpdated(function ($set, $state, $get) {
+                        $set('section_id', null);
 
+                        $exists = \App\Models\Attendance::where('academic_year_id', $get('academic_year_id'))
+                            ->where('grade_id', $state)
+                            ->where('section_id', $get('section_id'))
+                            ->whereDate('attendance_date', $get('attendance_date'))
+                            ->exists();
+
+                        $set('is_already_taken', $exists);
+                    }),
+
+                // For section_id
                 Select::make('section_id')
                     ->label('Section')
-                    ->reactive()
+                    ->options(fn($get) => \App\Models\Section::where('grade_id', $get('grade_id'))
+                        ->where('academic_year_id', $get('academic_year_id'))
+                        ->pluck('name', 'id'))
                     ->required()
-                    ->options(
-                        fn(callable $get) =>
-                        \App\Models\Section::where('grade_id', $get('grade_id'))->where('academic_year_id', $get('academic_year_id'))
-                            ->pluck('name', 'id')
-                    ),
+                    ->reactive()
+                    ->afterStateUpdated(function ($set, $state, $get) {
+                        $exists = \App\Models\Attendance::where('academic_year_id', $get('academic_year_id'))
+                            ->where('grade_id', $get('grade_id'))
+                            ->where('section_id', $state)
+                            ->whereDate('attendance_date', $get('attendance_date'))
+                            ->exists();
 
+                        $set('is_already_taken', $exists);
+                    }),
+
+                // For attendance_date
                 DatePicker::make('attendance_date')
-                    ->required(),
+                    ->default(now())
+                    ->required()
+                    ->reactive()
+                    ->afterStateUpdated(function ($set, $state, $get) {
+                        $exists = \App\Models\Attendance::where('academic_year_id', $get('academic_year_id'))
+                            ->where('grade_id', $get('grade_id'))
+                            ->where('section_id', $get('section_id'))
+                            ->whereDate('attendance_date', $state)
+                            ->exists();
 
+                        $set('is_already_taken', $exists);
+                    }),
+
+                Placeholder::make('already_taken_warning')
+                    ->visible(fn($get) => $get('is_already_taken') === true)
+                    ->content('⚠️ Attendance already taken for selected date, grade, and section.'),
+
+
+                // Fix Placeholder content callback signature:
                 Placeholder::make('student_toggles')
                     ->label('Student Attendance')
                     ->columnSpanFull()
-                    ->content(function (callable $get, callable $set) {
+                    ->content(function ($get) {
                         $gradeId = $get('grade_id');
                         $sectionId = $get('section_id');
                         $academicYearId = $get('academic_year_id');
@@ -67,8 +121,11 @@ class AttendanceResource extends Resource
                         }
 
                         $students = Student::whereHas('academic', function ($q) use ($gradeId, $sectionId, $academicYearId) {
-                            $q->where('grade_id', $gradeId)->where('section_id', $sectionId)->where('academic_year_id', $academicYearId);
+                            $q->where('grade_id', $gradeId)
+                                ->where('section_id', $sectionId)
+                                ->where('academic_year_id', $academicYearId);
                         })->get();
+
                         return view('filament.attendance.attendance-student-list', [
                             'students' => $students,
                         ]);
@@ -87,7 +144,19 @@ class AttendanceResource extends Resource
                 TextColumn::make('attendance_date')
             ])
             ->filters([
-                //
+                SelectFilter::make('academic_year_id')->relationship('academicYear', 'name'),
+                SelectFilter::make('grade_id')->relationship('grade', 'name'),
+                SelectFilter::make('section_id')->relationship('section','name'),
+                Filter::make('attendance_date')
+                    ->form([
+                        DatePicker::make('attendance_date')->label('From Date'),
+                        DatePicker::make('attendance_date')->label('To Date'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['attendance_date'], fn($q) => $q->whereDate('attendance_date', '>=', $data['date_from']))
+                            ->when($data['attendance_date'], fn($q) => $q->whereDate('attendance_date', '<=', $data['date_to']));
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

@@ -10,6 +10,12 @@ class Attendance extends Model
     use HasFactory;
     protected $fillable = ['academic_year_id', 'grade_id', 'section_id', 'attendance_date'];
 
+    protected static function booted(): void
+    {
+        static::deleting(function ($student) {
+            $student->attendanceData()->delete();
+        });
+    }
     public function academicYear()
     {
         return $this->belongsTo(AcademicYear::class);
@@ -29,6 +35,7 @@ class Attendance extends Model
     {
         return $this->hasMany(AttendanceData::class);
     }
+
 
     public function student()
     {
