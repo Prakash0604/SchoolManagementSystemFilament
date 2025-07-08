@@ -17,7 +17,9 @@ class SiteSettings extends Page implements Forms\Contracts\HasForms
 {
     use Forms\Concerns\InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';  
+      protected static ?string $navigationGroup = 'Settings';
+
     protected static ?string $navigationLabel = 'Site Settings';
     // protected static ?string $navigationGroup = 'Settings';
     protected static string $view = 'filament.pages.site-settings';

@@ -26,6 +26,7 @@ use Filament\Tables\Filters\SelectFilter;
 class AttendanceResource extends Resource
 {
     protected static ?string $model = Attendance::class;
+    protected static ?string $navigationGroup = 'Academic Setup';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

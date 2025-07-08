@@ -21,6 +21,7 @@ class GradeSubjectResource extends Resource
     protected static ?string $model = GradeSubject::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'Academic Setup';
 
     public static function form(Form $form): Form
     {
